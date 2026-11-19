@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alejandro Mendoza | Tarjeta Digital vCard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome para iconos limpios y escalables -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- QRCode.js para generación dinámica de códigos QR en tiempo real -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    boxShadow: {
+                        'glass': '0 20px 50px rgba(0, 0, 0, 0.12)',
+                        'glass-dark': '0 20px 50px rgba(0, 0, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-300 relative overflow-x-hidden selection:bg-blue-600 selection:text-white">
+
+    <!-- Fondo decorativo con gradientes sutiles (Glassmorphism backdrop) -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/20 dark:bg-blue-600/15 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-24 w-96 h-96 bg-indigo-500/20 dark:bg-indigo-600/15 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 left-1/3 w-80 h-80 bg-cyan-400/20 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Barra Superior de Utilidades (Modo Oscuro / Modo Edición) -->
+    <header class="w-full max-w-4xl mx-auto px-4 pt-6 pb-2 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md">
+                vC
+            </span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Tarjeta Digital Interactiva
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Botón Abrir/Cerrar Editor -->
+            <button id="toggleEditBtn" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 shadow-sm transition-all active:scale-95">
+                <i class="fa-solid fa-pen-to-square text-blue-600 dark:text-blue-400"></i>
+                <span id="toggleEditLabel">Personalizar</span>
+            </button>
+
+            <!-- Botón Cambiar Tema Claro / Oscuro -->
+            <button id="themeToggleBtn" type="button" aria-label="Cambiar tema" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 shadow-sm transition-all active:scale-95">
+                <i id="themeIcon" class="fa-solid fa-moon text-slate-700 dark:text-amber-400"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="w-full max-w-4xl mx-auto px-4 py-4 sm:py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- COLUMNA IZQUIERDA / PRINCIPAL: Tarjeta de Presentación Digital -->
+            <section id="cardContainer" class="lg:col-span-7 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/60 dark:border-slate-800/90 rounded-3xl shadow-glass dark:shadow-glass-dark overflow-hidden transition-all duration-300">
+                
+                <!-- Banner Superior de la Tarjeta -->
+                <div class="h-32 sm:h-36 bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 relative">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <!-- Etiqueta de disponibilidad -->
+                    <div class="absolute top-4 right-4 bg-black/30 backdrop-blur-md text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5 border border-white/15">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Disponible para proyectos</span>
+                    </div>
+                </div>
+
+                <!-- Contenido del Perfil -->
+                <div class="px-6 sm:px-8 pb-8">
+                    <!-- Avatar + Acciones rápidas -->
+                    <div class="relative flex flex-col sm:flex-row sm:items-end justify-between -mt-14 sm:-mt-16 mb-5 gap-4">
+                        <div class="relative inline-block">
+                            <img id="displayAvatar" 
+                                 src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80" 
+                                 onerror="this.onerror=null; this.src='https://placehold.co/300x300/1e293b/ffffff?text=AM';"
+                                 alt="Foto de perfil profesional" 
+                                 class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-4 border-white dark:border-slate-900 shadow-lg bg-slate-200 dark:bg-slate-800">
+                            <span title="Perfil Verificado" class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs border-2 border-white dark:border-slate-900 shadow">
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        </div>
+
+                        <!-- Botones de acción rápida (Compartir & Copiar) -->
+                        <div class="flex items-center gap-2 self-start sm:self-end">
+                            <button id="shareBtn" type="button" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95">
+                                <i class="fa-solid fa-share-nodes"></i>
+                                <span>Compartir</span>
+                            </button>
+                            <button id="copyInfoBtn" type="button" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copiar datos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Nombre, Cargo y Empresa -->
+                    <div class="mb-4">
+                        <h1 id="displayName" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                            Alejandro Mendoza
+                        </h1>
+                        <p id="displayTitle" class="text-sm sm:text-base font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
+                            Arquitecto de Soluciones & Consultor Digital
+                        </p>
+                        <div class="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            <i class="fa-solid fa-building text-slate-400"></i>
+                            <span id="displayCompany">NovaTech Cloud Solutions</span>
+                            <span>•</span>
+                            <span id="displayLocation">Medellín, Colombia</span>
+                        </div>
+                    </div>
+
+                    <!-- Biografía Breve -->
+                    <p id="displayBio" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-6 bg-slate-50/80 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        Especialista en transformación digital, arquitectura cloud y desarrollo de productos escalables. Ayudo a empresas a modernizar su infraestructura tecnológica con soluciones eficientes y seguras.
+                    </p>
+
+                    <!-- Botones Principales de Contacto Directo (Llamar / WhatsApp / Email) -->
+                    <div class="grid grid-cols-3 gap-2.5 sm:gap-3 mb-6">
+                        <a id="callLink" href="tel:+573001234567" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/60 transition-all group">
+                            <i class="fa-solid fa-phone text-base mb-1 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-semibold">Llamar</span>
+                        </a>
+                        <a id="whatsappLink" href="https://wa.me/573001234567" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/50 transition-all group">
+                            <i class="fa-brands fa-whatsapp text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-semibold">WhatsApp</span>
+                        </a>
+                        <a id="emailQuickLink" href="mailto:alejandro.mendoza@novatech.co" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50 transition-all group">
+                            <i class="fa-solid fa-envelope text-base mb-1 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-semibold">Correo</span>
+                        </a>
+                    </div>
+
+                    <!-- Lista Detallada de Datos de Contacto -->
+                    <div class="space-y-2.5 mb-6">
+                        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm shrink-0">
+                                    <i class="fa-solid fa-mobile-screen-button"></i>
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Teléfono Móvil</p>
+                                    <p id="displayPhone" class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">+57 300 123 4567</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="copySingleField('phone')" title="Copiar teléfono" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
+                                    <i class="fa-solid fa-at"></i>
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Correo Electrónico</p>
+                                    <p id="displayEmail" class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">alejandro.mendoza@novatech.co</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="copySingleField('email')" title="Copiar correo" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shadow-sm shrink-0">
+                                    <i class="fa-solid fa-globe"></i>
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Sitio Web / Portafolio</p>
+                                    <a id="displayWebsiteLink" href="https://alejandromendoza.dev" target="_blank" rel="noopener noreferrer" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline truncate block">
+                                        https://alejandromendoza.dev
+                                    </a>
+                                </div>
+                            </div>
+                            <a id="externalWebIcon" href="https://alejandromendoza.dev" target="_blank" rel="noopener noreferrer" title="Abrir sitio web" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Redes Sociales Profesionales -->
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Conecta en redes</p>
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <a id="socialLinkedin" href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="flex-1 min-w-[60px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#0A66C2] hover:text-white dark:hover:bg-[#0A66C2] text-slate-700 dark:text-slate-200 text-sm font-medium transition-all">
+                                <i class="fa-brands fa-linkedin-in"></i>
+                                <span class="hidden sm:inline text-xs">LinkedIn</span>
+                            </a>
+                            <a id="socialGithub" href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="flex-1 min-w-[60px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 text-slate-700 dark:text-slate-200 text-sm font-medium transition-all">
+                                <i class="fa-brands fa-github"></i>
+                                <span class="hidden sm:inline text-xs">GitHub</span>
+                            </a>
+                            <a id="socialTwitter" href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X Twitter" class="flex-1 min-w-[60px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-black hover:text-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-all">
+                                <i class="fa-brands fa-x-twitter"></i>
+                                <span class="hidden sm:inline text-xs">X</span>
+                            </a>
+                            <a id="socialInstagram" href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="flex-1 min-w-[60px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:text-white text-slate-700 dark:text-slate-200 text-sm font-medium transition-all">
+                                <i class="fa-brands fa-instagram"></i>
+                                <span class="hidden sm:inline text-xs">Instagram</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMNA DERECHA: Módulo QR vCard & Descarga Directa (.vcf) -->
+            <aside class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- Tarjeta de Código QR Escaneable y Descarga vCard -->
+                <div class="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-white/60 dark:border-slate-800/90 rounded-3xl p-6 sm:p-7 shadow-glass dark:shadow-glass-dark text-center">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-3">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Escanea y guarda al instante</span>
+                    </div>
+
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                        Código QR vCard
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 mb-5">
+                        Apunta la cámara de tu teléfono para importar este contacto directamente en tu agenda.
+                    </p>
+
+                    <!-- Contenedor del Código QR Dinámico -->
+                    <div class="relative mx-auto w-56 h-56 sm:w-60 sm:h-60 bg-white p-4 rounded-3xl shadow-inner border-2 border-slate-100 flex items-center justify-center mb-5 group">
+                        <div id="qrcode" class="flex items-center justify-center"></div>
+                        <!-- Esquinas decorativas estilo escáner -->
+                        <span class="absolute top-2.5 left-2.5 w-4 h-4 border-t-2 border-l-2 border-blue-600 rounded-tl-lg pointer-events-none"></span>
+                        <span class="absolute top-2.5 right-2.5 w-4 h-4 border-t-2 border-r-2 border-blue-600 rounded-tr-lg pointer-events-none"></span>
+                        <span class="absolute bottom-2.5 left-2.5 w-4 h-4 border-b-2 border-l-2 border-blue-600 rounded-bl-lg pointer-events-none"></span>
+                        <span class="absolute bottom-2.5 right-2.5 w-4 h-4 border-b-2 border-r-2 border-blue-600 rounded-br-lg pointer-events-none"></span>
+                    </div>
+
+                    <!-- Botón Prominente para Descargar Archivo .vcf -->
+                    <button id="downloadVcfBtn" type="button" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm sm:text-base shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                        <i class="fa-solid fa-address-card text-lg"></i>
+                        <span>Guardar Contacto (.vcf)</span>
+                    </button>
+
+                    <!-- Botón secundario para descargar la imagen del QR -->
+                    <button id="downloadQrImgBtn" type="button" class="w-full mt-3 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs flex items-center justify-center gap-2 transition-colors">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Descargar imagen QR (PNG)</span>
+                    </button>
+
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-4">
+                        Compatible con iOS (Apple Contactos), Android, Outlook y Google Contacts.
+                    </p>
+                </div>
+
+                <!-- Vista Previa Técnica del Código vCard (Colapsable) -->
+                <div class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/70 dark:border-slate-800 rounded-2xl p-4">
+                    <button id="toggleRawVcfBtn" type="button" class="w-full flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-code text-blue-500"></i>
+                            Ver estructura estándar vCard 3.0
+                        </span>
+                        <i id="rawVcfChevron" class="fa-solid fa-chevron-down transition-transform"></i>
+                    </button>
+                    <pre id="rawVcfPreview" class="hidden mt-3 p-3 rounded-xl bg-slate-900 text-emerald-400 text-[11px] font-mono overflow-x-auto leading-relaxed"></pre>
+                </div>
+
+            </aside>
+        </div>
+
+        <!-- PANEL DE PERSONALIZACIÓN EN TIEMPO REAL (Oculto por defecto, activable desde el botón superior) -->
+        <section id="editorPanel" class="hidden mt-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-blue-200 dark:border-blue-900/60 rounded-3xl p-6 sm:p-8 shadow-xl transition-all">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-600"></i>
+                        Personalizar Tarjeta y Código QR
+                    </h3>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                        Cualquier cambio actualiza automáticamente la tarjeta, el código QR y el archivo descargable .vcf.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="resetDataBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        Restaurar ejemplo
+                    </button>
+                    <button id="closeEditorBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                        Listo
+                    </button>
+                </div>
+            </div>
+
+            <form id="vcardForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Nombre -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Nombre</label>
+                    <input type="text" id="inputFirstName" value="Alejandro" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Apellidos -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Apellidos</label>
+                    <input type="text" id="inputLastName" value="Mendoza" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Cargo -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Cargo Profesional</label>
+                    <input type="text" id="inputTitle" value="Arquitecto de Soluciones & Consultor Digital" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Empresa -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Empresa / Organización</label>
+                    <input type="text" id="inputCompany" value="NovaTech Cloud Solutions" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Teléfono -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Teléfono (con código país)</label>
+                    <input type="tel" id="inputPhone" value="+57 300 123 4567" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Email -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Correo Electrónico</label>
+                    <input type="email" id="inputEmail" value="alejandro.mendoza@novatech.co" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Sitio Web -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Sitio Web</label>
+                    <input type="url" id="inputWebsite" value="https://alejandromendoza.dev" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Ubicación -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Ciudad / País</label>
+                    <input type="text" id="inputLocation" value="Medellín, Colombia" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- URL Foto de Perfil -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">URL Foto de Perfil</label>
+                    <input type="url" id="inputAvatar" value="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- LinkedIn -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">URL LinkedIn</label>
+                    <input type="url" id="inputLinkedin" value="https://linkedin.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- GitHub -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">URL GitHub</label>
+                    <input type="url" id="inputGithub" value="https://github.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- X / Twitter -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">URL X (Twitter)</label>
+                    <input type="url" id="inputTwitter" value="https://x.com" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <!-- Biografía (ancho completo) -->
+                <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Biografía Breve</label>
+                    <textarea id="inputBio" rows="2" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">Especialista en transformación digital, arquitectura cloud y desarrollo de productos escalables. Ayudo a empresas a modernizar su infraestructura tecnológica con soluciones eficientes y seguras.</textarea>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Notificación Toast Flotante (Reemplaza cualquier alert nativo) -->
+    <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+        <div class="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs sm:text-sm font-semibold shadow-2xl border border-slate-700 dark:border-slate-200">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600"></i>
+            <span id="toastMessage">Acción completada</span>
+        </div>
+    </div>
+
+    <!-- Pie de página minimalista -->
+    <footer class="w-full max-w-4xl mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+        <p>Tarjeta de Presentación Digital vCard 3.0 • Escanea o descarga para guardar en tus contactos</p>
+    </footer>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        // Datos iniciales por defecto del profesional
+        const defaultProfile = {
+            firstName: "Alejandro",
+            lastName: "Mendoza",
+            title: "Arquitecto de Soluciones & Consultor Digital",
+            company: "NovaTech Cloud Solutions",
+            phone: "+57 300 123 4567",
+            email: "alejandro.mendoza@novatech.co",
+            website: "https://alejandromendoza.dev",
+            location: "Medellín, Colombia",
+            avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80",
+            linkedin: "https://linkedin.com",
+            github: "https://github.com",
+            twitter: "https://x.com",
+            instagram: "https://instagram.com",
+            bio: "Especialista en transformación digital, arquitectura cloud y desarrollo de productos escalables. Ayudo a empresas a modernizar su infraestructura tecnológica con soluciones eficientes y seguras."
+        };
+
+        let profileData = { ...defaultProfile };
+        let qrCodeInstance = null;
+
+        /**
+         * Muestra una notificación elegante tipo Toast en pantalla
+         */
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
+            toastIcon.className = isError 
+                ? 'fa-solid fa-circle-exclamation text-rose-400 dark:text-rose-600' 
+                : 'fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600';
+
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 3000);
+        }
+
+        /**
+         * Construye la cadena estándar vCard 3.0 (.vcf) a partir de los datos actuales.
+         * Al escanear este contenido en el QR, los teléfonos iOS y Android lo reconocen
+         * nativamente como "Añadir contacto".
+         */
+        function generateVCardString(data) {
+            const fullName = `${data.firstName} ${data.lastName}`.trim();
+            const cleanPhone = data.phone.replace(/\s+/g, '');
+
+            // Formato estándar RFC 2426 (vCard 3.0)
+            const lines = [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `N:${data.lastName};${data.firstName};;;`,
+                `FN:${fullName}`,
+                `ORG:${data.company}`,
+                `TITLE:${data.title}`,
+                `TEL;TYPE=CELL,VOICE:${cleanPhone}`,
+                `EMAIL;TYPE=PREF,INTERNET:${data.email}`,
+                `URL:${data.website}`,
+                `ADR;TYPE=WORK:;;${data.location};;;;`,
+                `NOTE:${data.bio.replace(/\n/g, ' ')}`,
+                'END:VCARD'
+            ];
+
+            return lines.join('\r\n');
+        }
+
+        /**
+         * Genera o actualiza el código QR en el DOM con el contenido vCard actual
+         */
+        function renderQRCode(vCardText) {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = ''; // Limpiar QR anterior
+
+            try {
+                qrCodeInstance = new QRCode(qrContainer, {
+                    text: vCardText,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#0f172a", // Slate 900 para máximo contraste al escanear
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (error) {
+                console.error("Error al generar el QR:", error);
+                qrContainer.innerHTML = '<p class="text-xs text-rose-500">Texto demasiado largo para QR</p>';
+            }
+        }
+
+        /**
+         * Sincroniza toda la interfaz visual, enlaces, vista previa vCard y código QR
+         */
+        function updateUI() {
+            const fullName = `${profileData.firstName} ${profileData.lastName}`.trim();
+            const digitsOnlyPhone = profileData.phone.replace(/[^0-9+]/g, '');
+            const whatsappDigits = profileData.phone.replace(/[^0-9]/g, '');
+
+            // Textos principales
+            document.getElementById('displayName').textContent = fullName || 'Nombre Profesional';
+            document.getElementById('displayTitle').textContent = profileData.title;
+            document.getElementById('displayCompany').textContent = profileData.company;
+            document.getElementById('displayLocation').textContent = profileData.location;
+            document.getElementById('displayBio').textContent = profileData.bio;
+
+            // Avatar con fallback
+            const avatarEl = document.getElementById('displayAvatar');
+            avatarEl.src = profileData.avatar;
+
+            // Contacto directo
+            document.getElementById('displayPhone').textContent = profileData.phone;
+            document.getElementById('displayEmail').textContent = profileData.email;
+            
+            const webLink = document.getElementById('displayWebsiteLink');
+            webLink.textContent = profileData.website;
+            webLink.href = profileData.website;
+            document.getElementById('externalWebIcon').href = profileData.website;
+
+            // Enlaces de acción rápida
+            document.getElementById('callLink').href = `tel:${digitsOnlyPhone}`;
+            document.getElementById('whatsappLink').href = `https://wa.me/${whatsappDigits}`;
+            document.getElementById('emailQuickLink').href = `mailto:${profileData.email}`;
+
+            // Redes sociales
+            document.getElementById('socialLinkedin').href = profileData.linkedin || '#';
+            document.getElementById('socialGithub').href = profileData.github || '#';
+            document.getElementById('socialTwitter').href = profileData.twitter || '#';
+
+            // Generar string vCard, actualizar vista previa y regenerar QR
+            const vCardContent = generateVCardString(profileData);
+            document.getElementById('rawVcfPreview').textContent = vCardContent;
+            renderQRCode(vCardContent);
+        }
+
+        /**
+         * Descarga el archivo .vcf funcional mediante un Blob
+         */
+        function downloadVCardFile() {
+            try {
+                const vCardContent = generateVCardString(profileData);
+                const blob = new Blob([vCardContent], { type: 'text/vcard;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+
+                const fileName = `${profileData.firstName}_${profileData.lastName}.vcf`
+                    .toLowerCase()
+                    .replace(/\s+/g, '_')
+                    .replace(/[^a-z0-9_.-]/g, '');
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = fileName || 'contacto.vcf';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(url);
+
+                showToast('Contacto (.vcf) descargado correctamente');
+            } catch (err) {
+                console.error(err);
+                showToast('No se pudo descargar el archivo vCard', true);
+            }
+        }
+
+        /**
+         * Descarga el código QR como imagen PNG
+         */
+        function downloadQRImage() {
+            const qrContainer = document.getElementById('qrcode');
+            const canvas = qrContainer.querySelector('canvas');
+            const img = qrContainer.querySelector('img');
+
+            let dataUrl = '';
+            if (canvas) {
+                dataUrl = canvas.toDataURL('image/png');
+            } else if (img && img.src) {
+                dataUrl = img.src;
+            }
+
+            if (!dataUrl) {
+                showToast('No se pudo exportar la imagen QR', true);
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `QR_${profileData.firstName}_${profileData.lastName}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Imagen QR descargada');
+        }
+
+        /**
+         * Copia texto al portapapeles de forma compatible con iframes y navegadores modernos
+         */
+        function copyTextToClipboard(text, successMsg) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            tempTextArea.style.position = 'fixed';
+            tempTextArea.style.left = '-9999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast(successMsg);
+            } catch (err) {
+                showToast('Error al copiar al portapapeles', true);
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+        /**
+         * Copia un campo individual (teléfono o correo)
+         */
+        function copySingleField(field) {
+            if (field === 'phone') {
+                copyTextToClipboard(profileData.phone, 'Teléfono copiado al portapapeles');
+            } else if (field === 'email') {
+                copyTextToClipboard(profileData.email, 'Correo electrónico copiado');
+            }
+        }
+
+        /**
+         * Inicialización de eventos al cargar la página
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render inicial
+            updateUI();
+
+            // Botón Descargar vCard (.vcf)
+            document.getElementById('downloadVcfBtn').addEventListener('click', downloadVCardFile);
+
+            // Botón Descargar Imagen QR
+            document.getElementById('downloadQrImgBtn').addEventListener('click', downloadQRImage);
+
+            // Botón Copiar todos los datos
+            document.getElementById('copyInfoBtn').addEventListener('click', () => {
+                const summary = `${profileData.firstName} ${profileData.lastName}\n${profileData.title} - ${profileData.company}\nTel: ${profileData.phone}\nEmail: ${profileData.email}\nWeb: ${profileData.website}`;
+                copyTextToClipboard(summary, 'Datos de contacto copiados');
+            });
+
+            // Botón Compartir tarjeta (Web Share API con fallback a copiar)
+            document.getElementById('shareBtn').addEventListener('click', async () => {
+                const shareData = {
+                    title: `${profileData.firstName} ${profileData.lastName} - Tarjeta Digital`,
+                    text: `Contacto profesional de ${profileData.firstName} ${profileData.lastName} (${profileData.title})`,
+                    url: window.location.href
+                };
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (err) {
+                        // Usuario canceló compartir
+                    }
+                } else {
+                    copyTextToClipboard(window.location.href, 'Enlace de la tarjeta copiado');
+                }
+            });
+
+            // Modo Claro / Oscuro
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            const htmlEl = document.documentElement;
+
+            // Detectar preferencia del sistema inicialmente
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                htmlEl.classList.add('dark');
+                themeIcon.className = 'fa-solid fa-sun text-amber-400';
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                htmlEl.classList.toggle('dark');
+                const isDark = htmlEl.classList.contains('dark');
+                themeIcon.className = isDark 
+                    ? 'fa-solid fa-sun text-amber-400' 
+                    : 'fa-solid fa-moon text-slate-700';
+            });
+
+            // Mostrar / Ocultar Panel de Edición
+            const editorPanel = document.getElementById('editorPanel');
+            const toggleEditBtn = document.getElementById('toggleEditBtn');
+            const closeEditorBtn = document.getElementById('closeEditorBtn');
+
+            function toggleEditor() {
+                const isHidden = editorPanel.classList.contains('hidden');
+                if (isHidden) {
+                    editorPanel.classList.remove('hidden');
+                    editorPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    editorPanel.classList.add('hidden');
+                }
+            }
+
+            toggleEditBtn.addEventListener('click', toggleEditor);
+            closeEditorBtn.addEventListener('click', () => editorPanel.classList.add('hidden'));
+
+            // Escuchar cambios en tiempo real en los inputs del formulario
+            const fieldBindings = [
+                { id: 'inputFirstName', key: 'firstName' },
+                { id: 'inputLastName', key: 'lastName' },
+                { id: 'inputTitle', key: 'title' },
+                { id: 'inputCompany', key: 'company' },
+                { id: 'inputPhone', key: 'phone' },
+                { id: 'inputEmail', key: 'email' },
+                { id: 'inputWebsite', key: 'website' },
+                { id: 'inputLocation', key: 'location' },
+                { id: 'inputAvatar', key: 'avatar' },
+                { id: 'inputLinkedin', key: 'linkedin' },
+                { id: 'inputGithub', key: 'github' },
+                { id: 'inputTwitter', key: 'twitter' },
+                { id: 'inputBio', key: 'bio' }
+            ];
+
+            fieldBindings.forEach(({ id, key }) => {
+                const inputEl = document.getElementById(id);
+                if (inputEl) {
+                    inputEl.addEventListener('input', (e) => {
+                        profileData[key] = e.target.value;
+                        updateUI();
+                    });
+                }
+            });
+
+            // Restaurar datos por defecto
+            document.getElementById('resetDataBtn').addEventListener('click', () => {
+                profileData = { ...defaultProfile };
+                fieldBindings.forEach(({ id, key }) => {
+                    const inputEl = document.getElementById(id);
+                    if (inputEl) inputEl.value = profileData[key];
+                });
+                updateUI();
+                showToast('Datos restaurados al perfil de ejemplo');
+            });
+
+            // Colapsable para ver el código vCard crudo
+            const toggleRawVcfBtn = document.getElementById('toggleRawVcfBtn');
+            const rawVcfPreview = document.getElementById('rawVcfPreview');
+            const rawVcfChevron = document.getElementById('rawVcfChevron');
+
+            toggleRawVcfBtn.addEventListener('click', () => {
+                rawVcfPreview.classList.toggle('hidden');
+                rawVcfChevron.classList.toggle('rotate-180');
+            });
+        });
+    </script>
+</body>
+</html>
